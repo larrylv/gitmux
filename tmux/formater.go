@@ -37,10 +37,12 @@ type symbols struct {
 	Untracked string // Untracked is the string shown before the count of untracked files.
 	Stashed   string // Stashed is the string shown before the count of stash entries.
 	Clean     string // Clean is the string shown when the working tree is clean.
+	Dirty     string // Dirty is the string shown when the working tree is dirty.
 }
 
 type styles struct {
 	Clear      string // Clear is the style string that clears all styles.
+	Dirty      string // Dirty is the style string that printed when the working tree is dirty.
 	State      string // State is the style string printed before eventual special state.
 	Branch     string // Branch is the style string printed before the local branch.
 	Remote     string // Remote is the style string printed before the upstream branch.
@@ -90,7 +92,8 @@ var DefaultCfg = Config{
 		Modified:   "✚ ",
 		Untracked:  "… ",
 		Stashed:    "⚑ ",
-		Clean:      "✔",
+		Clean:      "✔ ",
+		Dirty:      "✗ ",
 		Ahead:      "↑·",
 		Behind:     "↓·",
 		HashPrefix: ":",
@@ -107,8 +110,9 @@ var DefaultCfg = Config{
 		Untracked:  "#[fg=magenta,bold]",
 		Stashed:    "#[fg=cyan,bold]",
 		Clean:      "#[fg=green,bold]",
+		Dirty:      "#[fg=red,bold]",
 	},
-	Layout: []string{"branch", "..", "remote-branch", "divergence", " - ", "flags"},
+	Layout: []string{"branch", "..", "remote-branch", "divergence", " - ", "flags", "clean-or-dirty"},
 	Options: options{
 		BranchMaxLen: 0,
 		BranchTrim:   dirRight,
@@ -186,6 +190,8 @@ func (f *Formater) format() {
 			f.divergence()
 		case "remote-branch":
 			f.remoteBranch()
+		case "clean-or-dirty":
+			f.cleanOrDirty()
 		case "divergence":
 			f.divergence()
 		case "flags":
@@ -266,6 +272,20 @@ func (f *Formater) currentRef() {
 
 	branch := truncate(f.st.LocalBranch, f.Options.BranchMaxLen, f.Options.BranchTrim)
 	fmt.Fprintf(&f.b, "%s%s", f.Styles.Branch, branch)
+}
+
+func (f *Formater) cleanOrDirty() {
+	var flags []string
+	if f.st.IsClean {
+		flags = append(flags, fmt.Sprintf("%s%s", f.Styles.Clean, f.Symbols.Clean))
+		f.clear()
+		f.b.WriteString(strings.Join(flags, " "))
+		return
+	}
+
+	flags = append(flags, fmt.Sprintf("%s%s", f.Styles.Dirty, f.Symbols.Dirty))
+	f.clear()
+	f.b.WriteString(strings.Join(flags, " "))
 }
 
 func (f *Formater) flags() {

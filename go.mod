@@ -1,4 +1,4 @@
-module github.com/arl/gitmux
+module github.com/larrylv/gitmux
 
 go 1.15
 

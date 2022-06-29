@@ -10,8 +10,8 @@ import (
 	"github.com/arl/gitstatus"
 	"gopkg.in/yaml.v3"
 
-	"github.com/arl/gitmux/json"
-	"github.com/arl/gitmux/tmux"
+	"github.com/larrylv/gitmux/json"
+	"github.com/larrylv/gitmux/tmux"
 )
 
 var version = "<<development version>>"
